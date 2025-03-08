@@ -171,5 +171,5 @@ cython_debug/
 .pypirc
 
 
-./assets
-./spare_data
+./assets/*
+./spare_data/*
