@@ -1,0 +1,97 @@
+parts:
+  5902A509:
+    pitch_count: 7  # Expected number of pitch values
+    num_of_extra_info: 1  # Number of extra data in detected_pitch
+    nominal_pitch: [15.0, 41.0, 54.0, 93.0, 94.0, 20.0, 317.0]  # Nominal values for pitch
+    tolerance: [3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 10.0]  # Tolerance range for the pitch graph
+
+  5819A107:
+    pitch_count: 7  # Expected number of pitch values
+    num_of_extra_info: 1  # Number of extra data in detected_pitch
+    nominal_pitch: [15.0, 169.0, 183.0, 164.0, 189.0, 15.0, 735.0]  # Nominal values for pitch
+    tolerance: [3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 5.0]  # Tolerance range for the pitch graph
+
+  5902A510:
+    pitch_count: 7
+    num_of_extra_info: 1
+    nominal_pitch: [20.0, 94.0, 93.0, 54.0, 41.0, 15.0, 317.0]
+    tolerance: [3.0, 2.0, 2.0, 2.0, 2.0, 3.0, 10.0]
+
+  82833W040P:
+    pitch_count: 8
+    num_of_extra_info: 0
+    nominal_pitch: [103.0, 113.0, 78.0, 98.0, 98.0, 87.0, 85.0, 14.0]
+    tolerance: [1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5]
+
+  82833W050P:
+    pitch_count: 8
+    num_of_extra_info: 0
+    nominal_pitch: [85.0, 87.0, 98.0, 98.0, 78.0, 113.0, 103.0, 14.0]
+    tolerance: [1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5]
+   
+  82832W040PKENGEN:
+    pitch_count: 8
+    num_of_extra_info: 0
+    nominal_pitch: [103.0, 113.0, 78.0, 98.0, 98.0, 87.0, 85.0, 14.0]
+    tolerance: [1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5]
+
+  82833W050PKENGEN:
+    pitch_count: 8
+    num_of_extra_info: 0
+    nominal_pitch: [85.0, 87.0, 98.0, 98.0, 78.0, 113.0, 103.0, 14.0]
+    tolerance: [1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5]
+    
+  82832W040PCLIPSOUNYUUKI:
+    pitch_count: 6
+    num_of_extra_info: 0
+    nominal_pitch: [103.0, 113.0, 78.0, 98.0, 98.0, 87.0]
+    tolerance: [1.5, 1.5, 1.5, 1.5, 1.5, 1.5]
+
+  82833W050PCLIPSOUNYUUKI:
+    pitch_count: 6
+    num_of_extra_info: 0
+    nominal_pitch: [87.0, 98.0, 98.0, 78.0, 113.0, 103.0]
+    tolerance: [1.5, 1.5, 1.5, 1.5, 1.5, 1.5]
+
+
+  82832W080P:
+    pitch_count: 11
+    num_of_extra_info: 0
+    nominal_pitch: [28.0, 37.0, 38.0, 52.0, 61.0, 78.0, 98.0, 98.0, 87.0, 85.0, 14.0]
+    tolerance: [1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5]
+
+  82833W090P:
+    pitch_count: 11
+    num_of_extra_info: 0
+    nominal_pitch: [85.0, 87.0, 98.0, 98.0, 78.0, 61.0, 52.0, 38.0, 37.0, 28.0, 14.0]
+    tolerance: [1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5]
+  
+  82832W080PKENGEN:
+    pitch_count: 11
+    num_of_extra_info: 0
+    nominal_pitch: [28.0, 37.0, 38.0, 52.0, 61.0, 78.0, 98.0, 98.0, 87.0, 85.0, 14.0]
+    tolerance: [1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5]
+
+  82833W090PKENGEN:
+    pitch_count: 11
+    num_of_extra_info: 0
+    nominal_pitch: [85.0, 87.0, 98.0, 98.0, 78.0, 61.0, 52.0, 38.0, 37.0, 28.0, 14.0]
+    tolerance: [1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5]
+    
+  82832W080PCLIPSOUNYUUKI:
+    pitch_count: 9
+    num_of_extra_info: 0
+    nominal_pitch: [28.0, 37.0, 38.0, 52.0, 61.0, 78.0, 98.0, 98.0, 87.0]
+    tolerance: [1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5]
+
+  82833W090PCLIPSOUNYUUKI:
+    pitch_count: 9
+    num_of_extra_info: 0
+    nominal_pitch: [87.0, 98.0, 98.0, 78.0, 61.0, 52.0, 38.0, 37.0, 28.0]
+    tolerance: [1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5, 1.5]
+
+  65820W030P:
+    pitch_count: 27
+    num_of_extra_info: 0
+    nominal_pitch: [26.0, 107.0, 75.0, 75.0, 75.0, 75.0, 75.0, 92.0, 75.0, 102.0, 100.0, 129.0, 103.0, 109.0, 103.0, 129.0, 100.0, 102.0, 75.0, 92.0, 75.0, 75.0, 75.0, 75.0, 75.0, 107.0, 26.0]
+    tolerance: [3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
