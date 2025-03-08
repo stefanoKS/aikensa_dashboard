@@ -662,7 +662,6 @@ if __name__ == '__main__':
 
     preprocessed_data = db_handler.preprocess_data(raw_data)
 
-    #export to excel
     # preprocessed_data.to_excel("preprocessed_data.xlsx")
 
     my_app = MyApp(db_handler)
