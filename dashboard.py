@@ -1,4 +1,4 @@
-from dash import Dash, html, dash_table, dcc, callback, Output, Input, State, ctx, no_update
+from AIKENSA_dash import Dash, html, dash_table, dcc, callback, Output, Input, State, ctx, no_update
 from dash.dcc import Download
 from dash.dcc import send_bytes
 import dash_bootstrap_components as dbc
@@ -227,12 +227,12 @@ class DatabaseHandler:
         raw_data = self.fetch_data(query)
         processed_data = self.preprocess_data(raw_data)
         if not processed_data.empty:
-            self.min_date = processed_data['full_timestamp'].min().date() - timedelta(days=1)
-            self.max_date = processed_data['full_timestamp'].max().date() + timedelta(days=1)
+            self.min_date = processed_data['full_timestamp'].min().date() - timedelta(days=5)
+            self.max_date = processed_data['full_timestamp'].max().date() + timedelta(days=5)
             self.part_options = [{'label': part, 'value': part} 
                                 for part in processed_data['partName'].unique()]
-            self.default_start_date = (datetime.today() - timedelta(days=1)).date()
-            self.default_end_date = (datetime.today() + timedelta(days=1)).date()
+            self.default_start_date = (datetime.today() - timedelta(days=5)).date()
+            self.default_end_date = (datetime.today() + timedelta(days=5)).date()
 
         return processed_data
 
@@ -257,6 +257,21 @@ class MyApp:
 
 
     def load_combined_data(self):
+        # """Fetch data from the DB handler and update key attributes."""
+        # self.combined_df = self.db_handler.load_combined_data()
+        # if self.combined_df is not None and not self.combined_df.empty:
+        #     # Update date and part selection attributes
+        #     self.min_date = self.combined_df['full_timestamp'].min().date() - timedelta(weeks=1)
+        #     self.max_date = self.combined_df['full_timestamp'].max().date() + timedelta(weeks=1)
+        #     self.part_options = [{'label': part, 'value': part} 
+        #                          for part in self.combined_df['partName'].unique()]
+        #     self.default_start_date = (datetime.today() - timedelta(weeks=1)).date()
+        #     self.default_end_date = (datetime.today() + timedelta(weeks=1)).date()
+        # else:
+        #     # Defaults if no data
+        #     self.min_date = self.max_date = None
+        #     self.part_options = []
+        #     self.default_start_date = self.default_end_date = None
 
         """Fetch and preprocess data every 5 minutes."""
         now = datetime.now()
@@ -264,12 +279,12 @@ class MyApp:
         if self.combined_df is None or (now - self.last_update) > timedelta(minutes=15):
             self.combined_df = self.db_handler.load_combined_data()
             if self.combined_df is not None and not self.combined_df.empty:
-                self.min_date = self.combined_df['full_timestamp'].min().date() - timedelta(days=1)
-                self.max_date = self.combined_df['full_timestamp'].max().date() + timedelta(days=1)
+                self.min_date = self.combined_df['full_timestamp'].min().date() - timedelta(days=5)
+                self.max_date = self.combined_df['full_timestamp'].max().date() + timedelta(days=5)
                 self.part_options = [{'label': part, 'value': part} 
                                      for part in self.combined_df['partName'].unique()]
-                self.default_start_date = (datetime.today() - timedelta(days=1)).date()
-                self.default_end_date = (datetime.today() + timedelta(days=1)).date()
+                self.default_start_date = (datetime.today() - timedelta(days=5)).date()
+                self.default_end_date = (datetime.today() + timedelta(days=5)).date()
             self.last_update = now  # Update the timestamp after refreshing data
         return self.combined_df
         
@@ -662,6 +677,7 @@ if __name__ == '__main__':
 
     preprocessed_data = db_handler.preprocess_data(raw_data)
 
+    #export to excel
     # preprocessed_data.to_excel("preprocessed_data.xlsx")
 
     my_app = MyApp(db_handler)

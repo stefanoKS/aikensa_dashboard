@@ -172,3 +172,26 @@ cython_debug/
 
 
 ./assets/*
+./spare_data/*
+assets/aikensa.png
+assets/parts_img/5819A107.png
+assets/parts_img/5902A509.png
+assets/parts_img/5902A510.png
+assets/parts_img/65820W030P.png
+assets/parts_img/82832W040P.png
+assets/parts_img/82832W040PCLIPSOUNYUUKI.png
+assets/parts_img/82832W040PKENGEN.png
+assets/parts_img/82832W080P.png
+assets/parts_img/82832W080PCLIPSOUNYUUKI.png
+assets/parts_img/82832W080PKENGEN.png
+assets/parts_img/82833W040P.png
+assets/parts_img/82833W050P.png
+assets/parts_img/82833W050PCLIPSOUNYUUKI.png
+assets/parts_img/82833W050PKENGEN.png
+assets/parts_img/82833W090P.png
+assets/parts_img/82833W090PCLIPSOUNYUUKI.png
+assets/parts_img/82833W090PKENGEN.png
+assets/parts_img/8462284S00.png
+assets/parts_img/all_parts.dwg
+assets/parts_img/not_found.png
+cache/processed.parquet
