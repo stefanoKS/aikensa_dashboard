@@ -38,18 +38,60 @@ class DatabaseHandler:
         except Exception as e:
             logging.error(f"Error loading MySQL credentials: {e}")
 
+    # def load_parts_config(self):
+    #     """Load parts configuration from a YAML file."""
+    #     try:
+    #         with open(self.parts_config_path, "r") as file:
+    #             self.config = yaml.safe_load(file).get("parts", {})
+    #             logging.info("Parts configuration loaded successfully.")
+    #     except Exception as e:
+    #         logging.error(f"Error loading parts config: {e}")
+
     def load_parts_config(self):
-        """Load parts configuration from a YAML file."""
         try:
             with open(self.parts_config_path, "r") as file:
-                self.config = yaml.safe_load(file).get("parts", {})
-                logging.info("Parts configuration loaded successfully.")
+                raw = yaml.safe_load(file) or {}
+                parts = raw.get("parts", raw)  # allow files that forgot the 'parts:' root
+                norm = {}
+                for k, v in (parts or {}).items():
+                    if k is None:
+                        continue
+                    k_norm = str(k).strip().upper()
+                    norm[k_norm] = v or {}
+                self.config = norm
+                logging.info("Parts configuration loaded successfully. %d parts", len(self.config))
         except Exception as e:
             logging.error(f"Error loading parts config: {e}")
+            self.config = {}
+
+    # def fetch_data(self, query: str) -> pd.DataFrame:
+    #     """
+    #     Fetch data from MySQL with proper connection handling.
+    #     """
+    #     conn = None
+    #     try:
+    #         conn = mysql.connector.connect(
+    #             user=self.mysqlID,
+    #             password=self.mysqlPassword,
+    #             host=self.mysqlHost,
+    #             port=self.mysqlHostPort,
+    #             database="AIKENSAresults"  # Replace with your database name if different
+    #         )
+    #         if conn.is_connected():
+    #             df = pd.read_sql(query, conn)
+    #             logging.info("Data fetched successfully from MySQL.")
+    #             return df
+    #     except Error as e:
+    #         logging.error(f"Error while connecting to MySQL: {e}")
+    #     finally:
+    #         if conn and conn.is_connected():
+    #             conn.close()
+    #     return pd.DataFrame()
 
     def fetch_data(self, query: str) -> pd.DataFrame:
         """
-        Fetch data from MySQL with proper connection handling.
+        Fetch approximately the latest 1% of rows from MySQL.
+        Automatically orders by a timestamp or ID column (descending).
         """
         conn = None
         try:
@@ -58,42 +100,93 @@ class DatabaseHandler:
                 password=self.mysqlPassword,
                 host=self.mysqlHost,
                 port=self.mysqlHostPort,
-                database="AIKENSAresults"  # Replace with your database name if different
+                database="AIKENSAresults"
             )
+
             if conn.is_connected():
-                df = pd.read_sql(query, conn)
-                logging.info("Data fetched successfully from MySQL.")
+                cursor = conn.cursor()
+                cursor.execute("SELECT COUNT(*) FROM AIKENSAresults.inspection_results;")
+                total_rows = cursor.fetchone()[0]
+                cursor.close()
+
+                # Ensure at least 1 row fetched
+                sample_size = max(1, int(total_rows * 0.1))
+
+                # Append ORDER BY and LIMIT for latest data
+                # Adjust column name here if your table uses a different time or ID field
+                sampled_query = f"""
+                    {query}
+                    ORDER BY timestampDate DESC, timestampHour DESC
+                    LIMIT {sample_size};
+                """
+
+                df = pd.read_sql(sampled_query, conn)
+                logging.info(f"Fetched latest {sample_size:,} rows (~1%) from MySQL successfully.")
+                #export to CSV for debugging
+                df.to_csv("latest_1_percent_debug.csv", index=False)
                 return df
+
         except Error as e:
             logging.error(f"Error while connecting to MySQL: {e}")
+
         finally:
             if conn and conn.is_connected():
                 conn.close()
+
         return pd.DataFrame()
 
     def clean_detected_pitch(self, row: dict):
         """Clean and separate the detected pitch from extra information."""
+        # Regex patterns defined inside the method
+        NUMPY_WRAP_RE = re.compile(
+            r'\s*(?:np|numpy)\.(?:float(?:16|32|64)?|int(?:8|16|32|64)?)\(\s*'
+            r'([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)'
+            r'\s*\)\s*'
+        )
+        NUM_TOKEN_RE = re.compile(
+            r'[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?'
+        )
+
         part_name = row.get('partName')
         if part_name not in self.config:
             return None, []
-        pitch_config = self.config[part_name]
-        detected_pitch_raw = row.get('detected_pitch', "")
-        detected_pitch_raw = re.sub(r'[\[\]]', '', detected_pitch_raw)
-        pitch_values = []
-        for x in detected_pitch_raw.split(','):
-            x = x.strip()
-            if re.match(r'^-?\d+(\.\d+)?$', x):
-                try:
-                    pitch_values.append(round(float(x), 1))
-                except ValueError:
-                    continue
-        actual_pitch_count = pitch_config['pitch_count'] - pitch_config.get('num_of_extra_info', 0)
-        total_expected_count = pitch_config['pitch_count']
-        if len(pitch_values) != total_expected_count:
+
+        pitch_cfg = self.config[part_name]
+        total_expected = pitch_cfg['pitch_count']
+        extra_n = pitch_cfg.get('num_of_extra_info', 0)
+        main_expected = total_expected - extra_n
+
+        raw = row.get('detected_pitch', "")
+        if not raw:
             return None, []
-        main_pitch_values = pitch_values[:actual_pitch_count]
-        extra_info_values = pitch_values[actual_pitch_count:]
-        return main_pitch_values, extra_info_values
+
+        s = str(raw)
+
+        # 1) Remove numpy wrappers (handles " np.float64(36.9)" etc.)
+        s = NUMPY_WRAP_RE.sub(r'\1', s)
+
+        # 2) Remove brackets
+        s = re.sub(r'[\[\]]', '', s)
+
+        # 3) Parse numeric tokens
+        vals = []
+        for tok in s.split(','):
+            tok = tok.strip()
+            if not tok or not NUM_TOKEN_RE.fullmatch(tok):
+                continue
+            try:
+                vals.append(round(float(tok), 1))
+            except ValueError:
+                continue
+
+        # 4) Validate pitch count
+        if len(vals) != total_expected:
+            return None, []
+
+        main_vals = vals[:main_expected]
+        extra_vals = vals[main_expected:]
+        return main_vals, extra_vals
+
 
     def clean_resultpitch(self, row: dict):
         """Clean the resultpitch data and convert to numeric values."""
@@ -155,6 +248,7 @@ class DatabaseHandler:
         data['kensaTime'] = data['kensaTime'].apply(lambda x: 0 if x > 240 else x)
         data = data.drop(columns=['timestampHour', 'timestampDate', 'detected_pitch', 'delta_pitch', 'total_length'], errors='ignore')
         logging.info("Data preprocessing completed successfully.")
+
         return data
 
     def load_combined_data(self) -> pd.DataFrame:
