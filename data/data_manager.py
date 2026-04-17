@@ -1,8 +1,15 @@
 # data/data_manager.py
+import logging
 import os
-import pandas as pd
 from datetime import datetime
+from pathlib import Path
+
+import pandas as pd
+
 from data.db_handler import DatabaseHandler
+
+
+logger = logging.getLogger(__name__)
 
 class DataManager:
     def __init__(self,
@@ -11,10 +18,50 @@ class DataManager:
         self.db = db_handler
         self.cache_path = cache_path
 
+    def _quarantine_cache(self, reason: str) -> None:
+        cache_file = Path(self.cache_path)
+        if not cache_file.exists():
+            return
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        quarantine_path = cache_file.with_suffix(f"{cache_file.suffix}.corrupt_{timestamp}")
+        try:
+            cache_file.rename(quarantine_path)
+            logger.warning("Quarantined cache file %s -> %s (%s)", cache_file, quarantine_path, reason)
+        except OSError as exc:
+            logger.warning("Failed to quarantine cache file %s (%s): %s", cache_file, reason, exc)
+
+    def _write_cache_atomically(self, df: pd.DataFrame) -> None:
+        cache_file = Path(self.cache_path)
+        cache_file.parent.mkdir(parents=True, exist_ok=True)
+
+        temp_file = cache_file.with_suffix(f"{cache_file.suffix}.tmp")
+        try:
+            df.to_parquet(temp_file, index=False)
+            if not temp_file.exists() or temp_file.stat().st_size == 0:
+                raise IOError(f"Temporary parquet write failed for {temp_file}")
+            os.replace(temp_file, cache_file)
+        finally:
+            if temp_file.exists():
+                try:
+                    temp_file.unlink()
+                except OSError:
+                    pass
+
     def load_cache(self) -> pd.DataFrame:
         """Load the local cache, or return empty DF if not exists."""
-        if os.path.exists(self.cache_path):
-            return pd.read_parquet(self.cache_path)
+        cache_file = Path(self.cache_path)
+        if cache_file.exists():
+            if cache_file.stat().st_size == 0:
+                self._quarantine_cache("cache file is 0 bytes")
+                return pd.DataFrame()
+
+            try:
+                return pd.read_parquet(cache_file)
+            except Exception as exc:
+                self._quarantine_cache(str(exc))
+                logger.warning("Failed to read cache %s, starting from empty cache: %s", cache_file, exc)
+                return pd.DataFrame()
         return pd.DataFrame()
 
     def get_max_timestamp(self, df: pd.DataFrame) -> datetime:
@@ -62,6 +109,5 @@ class DataManager:
             keep='last', inplace=True)
         combined.sort_values(['partName', 'full_timestamp'], inplace=True)
         # 5) save back
-        os.makedirs(os.path.dirname(self.cache_path), exist_ok=True)
-        combined.to_parquet(self.cache_path, index=False)
+        self._write_cache_atomically(combined)
         return combined
